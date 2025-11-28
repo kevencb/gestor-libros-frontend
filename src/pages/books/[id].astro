@@ -1,0 +1,66 @@
+---
+import Header from "../../components/Header.astro";
+
+// SSR: Cargar datos del libro
+const { id } = Astro.params;
+
+const res = await fetch(`http://localhost:4000/api/books/${id}`);
+const book = await res.json();
+---
+
+<Header />
+
+<main class="container">
+  <h1>{book.title}</h1>
+
+  <img src={book.cover} alt={book.title} width="200" />
+
+  <p><strong>Autor:</strong> {book.author}</p>
+  <p><strong>Género:</strong> {book.genre}</p>
+  <p><strong>Descripción:</strong> {book.description}</p>
+
+  <button id="favBtn">Agregar a favoritos</button>
+</main>
+
+<!-- CLIENT-SIDE -->
+<script>
+  // Astro.params.id NO funciona dentro del navegador…
+  // Por eso lo inyectamos como string plano:
+  const bookId = "{id}";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const favBtn = document.getElementById("favBtn");
+
+    if (favBtn) {
+      favBtn.addEventListener("click", async () => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          alert("Debes iniciar sesión para agregar a favoritos");
+          return;
+        }
+
+        // fetch del navegador = sin error de sobrecarga
+        const res = await fetch(
+          `http://localhost:4000/api/users/favorites/${bookId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+          }
+        );
+
+        const data = await res.json();
+        alert(data.msg || "Añadido a favoritos");
+      });
+    }
+  });
+</script>
+
+<style>
+  .container {
+    padding: 2rem;
+  }
+</style>

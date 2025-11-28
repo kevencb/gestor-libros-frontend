@@ -1,0 +1,178 @@
+---
+import "/src/styles/global.css";
+import Header from "../../components/Header.astro";
+---
+
+<Header />
+
+<main class="container">
+  <h1 class="form-title">Almacenamiento de Libros</h1>
+  <div class="admin-container">
+    <form id="create" class="form form-update">
+      <input type="hidden" id="bookId" />
+
+      <input class="input" name="title" placeholder="Título" required />
+
+      <input class="input" name="author" placeholder="Autor" />
+
+      <input class="input" name="genre" placeholder="Género" required />
+
+      <textarea class="input" name="description" placeholder="Descripción"
+      ></textarea>
+
+      <input class="input" name="coverImage" placeholder="URL" />
+
+      <input
+        class="input"
+        name="publicationDate"
+        type="date"
+        placeholder="Fecha de publicación"
+      />
+
+      <div style="margin-top:12px;">
+        <button class="btn" type="submit" id="submitBtn">Crear</button>
+      </div>
+
+      <p id="msg" class="small" style="display:none;color:green;"></p>
+    </form>
+    <div>
+      <table id="booksTable" class="table" border="1">
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Autor</th>
+            <th>Género</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="booksBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+  import {
+    createBook,
+    getBooks,
+    deleteBook,
+    updateBook,
+  } from "/src/lib/api.js";
+
+  const f = document.getElementById("create");
+  const msg = document.getElementById("msg");
+  const booksBody = document.getElementById("booksBody");
+  const submitBtn = document.getElementById("submitBtn");
+  const bookIdField = document.getElementById("bookId");
+
+  // --- VALIDAR ADMIN ---
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+
+  const isAdmin = user?.user?.role === "admin";
+
+  if (!user || !user.token || !isAdmin) {
+    alert("Acceso denegado. Debes ser admin");
+    window.location.href = "/login";
+  }
+
+  // --- CARGAR LIBROS ---
+  async function loadBooks() {
+    const data = await getBooks(user.token);
+
+    booksBody.innerHTML = "";
+
+    data.forEach((b) => {
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+      <td>${b.title}</td>
+      <td>${b.author}</td>
+      <td>${b.genre}</td>
+      <td>${b.publicationDate?.slice(0, 10) || ""}</td>
+      <td>
+        <button data-id="${b._id}" class="editBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+          </svg>  
+        </button>
+        <button data-id="${b._id}" class="deleteBtn" style="color:red;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+          </svg>
+        </button>
+      </td>
+    `;
+
+      booksBody.appendChild(tr);
+    });
+
+    document.querySelectorAll(".editBtn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const id = e.target.dataset.id;
+        const book = data.find((x) => x._id === id);
+
+        f.title.value = book.title;
+        f.author.value = book.author;
+        f.genre.value = book.genre;
+        f.description.value = book.description || "";
+        f.coverImage.value = book.cover || "";
+        f.publicationDate.value = book.publicationDate?.slice(0, 10) || "";
+
+        bookIdField.value = id;
+        submitBtn.textContent = "Actualizar";
+      });
+    });
+
+    // Botones eliminar
+    document.querySelectorAll(".deleteBtn").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        const id = e.target.dataset.id;
+        if (confirm("¿Eliminar este libro?")) {
+          await deleteBook(user.token, id);
+          loadBooks();
+        }
+      });
+    });
+  }
+
+  loadBooks();
+
+  // --- CREAR / ACTUALIZAR ---
+  f.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const data = {
+      title: f.title.value,
+      author: f.author.value,
+      genre: f.genre.value,
+      description: f.description.value,
+      cover: f.coverImage.value,
+      publicationDate: f.publicationDate.value,
+      recommended: false,
+    };
+
+    let res;
+
+    if (bookIdField.value) {
+      // actualizar
+      res = await updateBook(user.token, bookIdField.value, data);
+      msg.textContent = "Libro actualizado";
+    } else {
+      // crear
+      res = await createBook(user.token, data);
+      msg.textContent = "Libro creado";
+    }
+
+    msg.style.display = "block";
+
+    // limpiar formulario
+    f.reset();
+    bookIdField.value = "";
+    submitBtn.textContent = "Crear";
+
+    loadBooks();
+  });
+</script>

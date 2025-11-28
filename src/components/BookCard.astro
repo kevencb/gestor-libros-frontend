@@ -1,0 +1,57 @@
+---
+import "/src/styles/global.css";
+// import { addFavorite } from "/src/lib/api.js";
+
+const { book } = Astro.props;
+---
+
+<div class="card">
+  <img
+    src={book.coverImage || book.cover || ""}
+    alt={book.title}
+    style="width:100%;height:180px;object-fit:cover;border-radius:6px"
+  />
+
+  <h3 style="margin:8px 0 4px;">{book.title}</h3>
+  <p class="small">{book.author} — {book.genre}</p>
+
+  <p class="small" style="margin-top:8px;">
+    {(book.description || "").slice(0, 120)}...
+  </p>
+
+  <div style="margin-top:12px; display:flex; gap:8px;">
+    <!-- 🔍 Ver detalle -->
+    <a
+      href={`/books/${book._id}`}
+      class="btn"
+      style="flex:1; text-align:center;"
+    >
+      Ver detalle
+    </a>
+
+    <!-- ❤️ Agregar/Quitar Favorito -->
+    <button
+      class="btn"
+      style="flex:1;"
+      onclick={`(async()=>{
+        const u = JSON.parse(localStorage.getItem('user') || 'null');
+        if(!u || !u.token){
+          alert('Debes iniciar sesión');
+          window.location.href = '/login';
+          return;
+        }
+
+        const res = await fetch('${import.meta.env.PUBLIC_API_URL || "http://localhost:4000/api"}/favorites/${book._id}', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + u.token }
+        });
+
+        const data = await res.json();
+        alert(data.msg || "Actualizado");
+      })()}
+    `}
+    >
+      ❤️ Favorito
+    </button>
+  </div>
+</div>

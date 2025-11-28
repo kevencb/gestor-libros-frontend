@@ -1,0 +1,57 @@
+---
+import "/src/styles/global.css";
+import Header from "../components/Header.astro";
+---
+
+<meta charset="UTF-8" />
+<Header />
+<main class="container">
+  <div>
+    <h2 class="form-title">Iniciar sesión</h2>
+    <form class="form" id="f">
+      <input
+        class="input"
+        name="email"
+        type="email"
+        placeholder="Correo Electrónico"
+        required
+      />
+      <input
+        class="input"
+        name="password"
+        type="password"
+        placeholder="Contraseña"
+        required
+      />
+      <div>
+        <button class="btn" type="submit">Login</button>
+      </div>
+      <p class="small">
+        ¿No tienes cuenta? <a href="/register">Regístrate</a>
+      </p>
+      <p id="err" class="small" style="color:#b91c1c; display:none;"></p>
+    </form>
+  </div>
+</main>
+
+<script type="module">
+  import { login } from "/src/lib/api.js";
+  const f = document.getElementById("f");
+  const err = document.getElementById("err");
+  f.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = { email: f.email.value, password: f.password.value };
+    const res = await login(data.email, data.password);
+    if (!res || !res.token) {
+      err.style.display = "block";
+      err.textContent = res?.msg || "Error en login";
+      return;
+    }
+    // store user object + token
+    localStorage.setItem(
+      "user",
+      JSON.stringify({ token: res.token, user: res.user || res })
+    );
+    window.location.href = "/";
+  });
+</script>

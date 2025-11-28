@@ -1,0 +1,50 @@
+---
+import "/src/styles/global.css";
+import Header from "../components/Header.astro";
+---
+
+<meta charset="UTF-8" />
+<Header />
+<main class="container">
+  <div class="">
+    <h2 class="form-title">Registro</h2>
+    <form id="r" class="form">
+      <input class="input" name="name" placeholder="Nombre Completo" required />
+      <input
+        class="input"
+        name="email"
+        placeholder="Correo Electrónico"
+        type="email"
+        required
+      />
+      <input
+        class="input"
+        name="password"
+        type="password"
+        placeholder="Contraseña"
+        required
+      />
+      <div>
+        <button class="btn" type="submit">Crear cuenta</button>
+      </div>
+      <p id="err" class="small" style="color:#b91c1c; display:none;"></p>
+    </form>
+  </div>
+</main>
+
+<script type="module">
+  import { register } from "/src/lib/api.js";
+  const f = document.getElementById("r");
+  f.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const res = await register(f.name.value, f.email.value, f.password.value);
+    if (!res || res.error) {
+      document.getElementById("err").style.display = "block";
+      document.getElementById("err").textContent =
+        res?.msg || "Error en registro";
+      return;
+    }
+    alert("Registro OK. Por favor inicia sesión.");
+    window.location.href = "/login";
+  });
+</script>

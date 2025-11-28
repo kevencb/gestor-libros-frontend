@@ -1,0 +1,65 @@
+---
+import "/src/styles/global.css";
+import Header from "../components/Header.astro";
+---
+
+<meta charset="UTF-8" />
+<Header />
+<main class="container">
+  <h1>Recomendaciones del Mes</h1>
+  <div id="booksGrid" class="book-grid"></div>
+</main>
+
+<script type="module">
+  import { fetchBooks, addFavorite } from "/src/lib/api.js";
+
+  const grid = document.getElementById("booksGrid");
+
+  async function load() {
+    const allBooks = await fetchBooks();
+    const books = allBooks.filter((b) => b.recommended === true);
+
+    grid.innerHTML = "";
+
+    books.forEach((b) => {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+      <img src="${b.coverImage || b.cover || ""}"/>
+      <span>${b.genre}</span>
+      <h2>${b.title}</h2>
+      <h3>${b.author}</h3>
+      <div class="card-button-container">
+        <button class="btn btn-info seeDetail" data-id="${b._id}">
+          Conoce más
+        </button>
+        <button class="btn addBtn btn-favorite">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#1e293b" class="bi bi-star" viewBox="0 0 16 16">
+            <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.330-.314.160-.888-.282-.950l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.950l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.560.560 0 0 0-.163-.505L1.710 6.745l4.052-.576a.530.530 0 0 0 .393-.288L8 2.223l1.847 3.658a.530.530 0 0 0 .393.288l4.052.575-2.906 2.770a.560.560 0 0 0-.163.506l.694 3.957-3.686-1.894a.500.500 0 0 0-.461 0z"/>
+          </svg>
+        </button>
+      </div>
+    `;
+
+      const btn = div.querySelector(".addBtn");
+      btn.addEventListener("click", async () => {
+        const user = JSON.parse(localStorage.getItem("user") || "null");
+        if (!user || !user.token) {
+          if (
+            confirm("Debes iniciar sesión para agregar a tu lista. Ir a login?")
+          ) {
+            window.location.href = "/login";
+          }
+          return;
+        }
+        const res = await addFavorite(user.token, b._id || b.id);
+        if (res?.msg) alert(res.msg);
+        else alert("Agregado");
+      });
+
+      grid.appendChild(div);
+    });
+  }
+
+  load();
+</script>
