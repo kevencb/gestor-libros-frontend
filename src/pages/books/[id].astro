@@ -1,7 +1,8 @@
 ---
+export const prerender = false;
+
 import Header from "../../components/Header.astro";
 
-// SSR: Cargar datos del libro
 const { id } = Astro.params;
 
 const res = await fetch(`http://localhost:4000/api/books/${id}`);
@@ -18,7 +19,6 @@ const book = await res.json();
   <p><strong>Autor:</strong> {book.author}</p>
   <p><strong>Género:</strong> {book.genre}</p>
   <p><strong>Descripción:</strong> {book.description}</p>
-
   <button id="favBtn">Agregar a favoritos</button>
 </main>
 

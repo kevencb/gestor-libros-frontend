@@ -227,6 +227,10 @@ form.form{
     }
 }
 
+.form-update{
+    width: 100%;
+}
+
 .form-title{
     font-size: 3.2rem;
     font-weight: 200;
@@ -250,13 +254,17 @@ p.small{
 }
 
 .admin-container{
-    display: flex;
-    gap: 2rem;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    width: 100%;
+    gap: 3.2rem;
 }
 
 .table{
+    width: 100%;
     border-collapse: collapse;
     color: #475569;
+    border: 0.1rem solid #e2e8f0;
     thead{
         tr{
             th{
@@ -268,7 +276,18 @@ p.small{
     tbody{
         td{
             padding: 0.4rem 0.8rem;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
         }
     }
+    button{
+        background: none;
+        border: none;
+        width: 3.2rem;
+        height: 3.2rem;
+    }
+}
+
+.table-container{
+    width: 100%;
+    flex-grow: 1;
 }
