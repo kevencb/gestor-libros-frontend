@@ -15,7 +15,21 @@ import Header from "../../components/Header.astro";
 
       <input class="input" name="author" placeholder="Autor" />
 
-      <input class="input" name="genre" placeholder="Género" required />
+      <select class="input" name="genre" required>
+        <option value="">Selecciona un género</option>
+        <option value="Fantasía">Fantasía</option>
+        <option value="Ciencia Ficción">Ciencia Ficción</option>
+        <option value="Misterio">Misterio</option>
+        <option value="Romance">Romance</option>
+        <option value="Historia">Historia</option>
+        <option value="Terror">Terror</option>
+        <option value="Juvenil">Juvenil</option>
+        <option value="Ensayo">Ensayo</option>
+        <option value="Poesía">Poesía</option>
+        <option value="Aventura">Aventura</option>
+        <option value="Drama">Drama</option>
+        <option value="Biografía">Biografía</option>
+      </select>
 
       <textarea class="input" name="description" placeholder="Descripción"
       ></textarea>
@@ -29,12 +43,19 @@ import Header from "../../components/Header.astro";
         placeholder="Fecha de publicación"
       />
 
+      <select class="input" name="recommended" id="recommended">
+        <option value="false">¿Recomendado?</option>
+        <option value="true">Sí</option>
+        <option value="false">No</option>
+      </select>
+
       <div style="margin-top:12px;">
         <button class="btn" type="submit" id="submitBtn">Crear</button>
       </div>
 
       <p id="msg" class="small" style="display:none;color:green;"></p>
     </form>
+
     <div class="table-container">
       <table id="booksTable" class="table" border="1">
         <thead>
@@ -42,6 +63,7 @@ import Header from "../../components/Header.astro";
             <th>Título</th>
             <th>Autor</th>
             <th>Género</th>
+            <th>Recomendado</th>
             <th>Fecha</th>
             <th>Acciones</th>
           </tr>
@@ -66,9 +88,7 @@ import Header from "../../components/Header.astro";
   const submitBtn = document.getElementById("submitBtn");
   const bookIdField = document.getElementById("bookId");
 
-  // --- VALIDAR ADMIN ---
   const user = JSON.parse(localStorage.getItem("user") || "null");
-
   const isAdmin = user?.user?.role === "admin";
 
   if (!user || !user.token || !isAdmin) {
@@ -76,7 +96,6 @@ import Header from "../../components/Header.astro";
     window.location.href = "/login";
   }
 
-  // --- CARGAR LIBROS ---
   async function loadBooks() {
     const data = await getBooks(user.token);
 
@@ -86,11 +105,14 @@ import Header from "../../components/Header.astro";
       const tr = document.createElement("tr");
 
       tr.innerHTML = `
-      <td>${b.title}</td>
-      <td>${b.author}</td>
-      <td>${b.genre}</td>
-      <td>${b.publicationDate?.slice(0, 10) || ""}</td>
+        <td>${b.title}</td>
+        <td>${b.author}</td>
+        <td>${b.genre}</td>
+        <td>${b.recommended ? "Sí" : "No"}</td>
+        <td>${b.publicationDate?.slice(0, 10) || ""}</td>
+
       <td>
+        <div class="table-actions">
         <button data-id="${b._id}" class="editBtn">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#1d4ed8" class="bi bi-pencil-square" viewBox="0 0 16 16">
             <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
@@ -103,8 +125,9 @@ import Header from "../../components/Header.astro";
             <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
           </svg>
         </button>
+        </div>  
       </td>
-    `;
+      `;
 
       booksBody.appendChild(tr);
     });
@@ -113,7 +136,6 @@ import Header from "../../components/Header.astro";
       btn.addEventListener("click", (e) => {
         const button = e.target.closest("button");
         const id = button.dataset.id;
-
         const book = data.find((x) => x._id === id);
 
         f.title.value = book.title;
@@ -123,15 +145,25 @@ import Header from "../../components/Header.astro";
         f.coverImage.value = book.cover || "";
         f.publicationDate.value = book.publicationDate?.slice(0, 10) || "";
 
+        document.getElementById("recommended").value = book.recommended
+          ? "true"
+          : "false";
+
         bookIdField.value = id;
         submitBtn.textContent = "Actualizar";
       });
     });
 
-    // Botones eliminar
     document.querySelectorAll(".deleteBtn").forEach((btn) => {
       btn.addEventListener("click", async (e) => {
-        const id = e.target.dataset.id;
+        const button = e.target.closest("button");
+        const id = button.dataset.id;
+
+        if (!id) {
+          console.error("ERROR: ID no encontrado");
+          return;
+        }
+
         if (confirm("¿Eliminar este libro?")) {
           await deleteBook(user.token, id);
           loadBooks();
@@ -142,7 +174,6 @@ import Header from "../../components/Header.astro";
 
   loadBooks();
 
-  // --- CREAR / ACTUALIZAR ---
   f.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -153,22 +184,16 @@ import Header from "../../components/Header.astro";
       description: f.description.value,
       cover: f.coverImage.value,
       publicationDate: f.publicationDate.value,
-      recommended: false,
+      recommended: f.recommended.value === "true",
     };
 
     let res;
 
     if (bookIdField.value) {
-      // actualizar
       res = await updateBook(user.token, bookIdField.value, data);
-      msg.textContent = "Libro actualizado";
     } else {
-      // crear
       res = await createBook(user.token, data);
-      msg.textContent = "Libro creado";
     }
-
-    msg.style.display = "block";
 
     f.reset();
     bookIdField.value = "";

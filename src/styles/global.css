@@ -13,7 +13,8 @@ html{
 }
 
 body{
-    font-family: var(--font)
+    font-family: var(--font);
+    color: #475569;
 }
 
 a{
@@ -33,20 +34,20 @@ button{
 
 .container{
     width: 90%;
-    max-width: 108rem;
+    max-width: 110rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 header{
+    margin: 0 auto;
     display: flex;
     justify-content: center;
-    height: 7.2rem;
-    background-color: #0f172a;
-    /* margin-bottom: 4rem; */
+    height: 8rem;
+    border-bottom: 0.1rem solid #e2e8f0;
     a.logo{
-        color:#f8fafc;
+        color:#334155;
         font-size: 3.2rem;
         font-weight: bold;
         display: flex;
@@ -61,7 +62,7 @@ header{
         gap: 2rem;
         align-items: center;
         a{
-            color:#f8fafc;
+            color:#334155;
             font-size: 1.4rem;
             text-transform: uppercase;
         };
@@ -70,8 +71,8 @@ header{
 
 main{
     width: 90%;
-    max-width: 92rem;
-    margin: 8rem auto;
+    max-width: 110rem;
+    margin: 6.4rem auto;
     display: grid;
     flex-direction: column;
 }
@@ -87,7 +88,7 @@ h1{
 .book-grid{
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 2.4rem;
+    gap: 3.2rem;
 }
 
 .card{
@@ -202,11 +203,6 @@ form.form{
     display: flex;
     flex-direction: column;
     height: auto;
-    label{
-        font-size: 1.6rem;
-        font-weight: 100;
-        margin-bottom: 0.6rem;
-    }
     input{
         padding: 1.2rem 1.2rem;
         background: none;
@@ -214,8 +210,10 @@ form.form{
         border-radius: 0.8rem;
         margin-bottom: 1.2rem;
         font-size: 1.4rem;
+        color: #475569;
     }
     textarea{
+        height: 12rem;
         padding: 1.2rem 1.2rem;
         background: none;
         border: 0.1rem solid #e2e8f0;
@@ -224,6 +222,18 @@ form.form{
         font-size: 1.4rem;
         resize: vertical;
         font-family: var(--font);
+        color: #475569;
+    }
+    select.input {
+        padding: 1.2rem 1.2rem;
+        background: none;
+        border: 0.1rem solid #e2e8f0;
+        border-radius: 0.8rem;
+        margin-bottom: 1.2rem;
+        font-size: 1.4rem;
+        padding-right: 2.8rem;
+        color: inherit;
+        font-family: inherit;
     }
 }
 
@@ -276,7 +286,7 @@ p.small{
     tbody{
         td{
             padding: 0.4rem 0.8rem;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
         }
     }
     button{
@@ -290,4 +300,51 @@ p.small{
 .table-container{
     width: 100%;
     flex-grow: 1;
+}
+
+.table-actions{
+    display: flex;
+}
+
+.book-detail{
+    display: grid;
+    width: 90%;
+    max-width: 110rem;
+    grid-template-columns: 32rem 1fr;
+    gap: 4rem;
+    color: #475569;
+    img{
+        width: 32rem;
+        border-radius: 0.8rem;
+    }
+    .book-info{
+        h1{
+            text-align: left;
+            margin-bottom: 0.4rem;
+            font-weight: 100;
+        }
+        h2{
+           font-weight: 400;
+           color: #64748b;
+        }
+        p{
+            margin: 2rem 0;
+            font-size: 1.4rem;
+            white-space: normal;
+            overflow-wrap: break-word;
+            color: #475569;
+        }
+        button{
+            width: 20rem;
+            align-self: flex-start;
+            height: 4rem;
+        }
+    }
+}
+
+.btn-logout{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
 }

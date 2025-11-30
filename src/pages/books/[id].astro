@@ -11,56 +11,57 @@ const book = await res.json();
 
 <Header />
 
-<main class="container">
-  <h1>{book.title}</h1>
+<main class="book-detail">
+  <div>
+    <img src={book.cover} alt={book.title} />
+  </div>
 
-  <img src={book.cover} alt={book.title} width="200" />
-
-  <p><strong>Autor:</strong> {book.author}</p>
-  <p><strong>Género:</strong> {book.genre}</p>
-  <p><strong>Descripción:</strong> {book.description}</p>
-  <button id="favBtn">Agregar a favoritos</button>
+  <div class="book-info">
+    <h1>{book.title}</h1>
+    <h2>{book.author}</h2>
+    <p>{book.description}</p>
+    <button id="favBtn" class="btn addBtn"> Agregar a favoritos </button>
+  </div>
 </main>
 
-<!-- CLIENT-SIDE -->
 <script>
-  // Astro.params.id NO funciona dentro del navegador…
-  // Por eso lo inyectamos como string plano:
-  const bookId = "{id}";
+  const bookId = window.location.pathname.split("/").pop();
 
   document.addEventListener("DOMContentLoaded", () => {
     const favBtn = document.getElementById("favBtn");
 
-    if (favBtn) {
-      favBtn.addEventListener("click", async () => {
-        const token = localStorage.getItem("token");
+    if (!favBtn) return;
 
-        if (!token) {
-          alert("Debes iniciar sesión para agregar a favoritos");
-          return;
+    favBtn.addEventListener("click", async () => {
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+
+      if (!user || !user.token) {
+        if (confirm("Debes iniciar sesión. ¿Ir al login?")) {
+          window.location.href = "/login";
         }
+        return;
+      }
 
-        // fetch del navegador = sin error de sobrecarga
+      try {
         const res = await fetch(
-          `http://localhost:4000/api/users/favorites/${bookId}`,
+          `http://localhost:4000/api/favorites/${bookId}`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: token,
+              Authorization: `Bearer ${user.token}`,
             },
           }
         );
 
         const data = await res.json();
-        alert(data.msg || "Añadido a favoritos");
-      });
-    }
+        console.log("🔥 Respuesta FAVORITOS:", data);
+
+        alert(data.msg || "Agregado a favoritos");
+      } catch (err) {
+        console.error("Error:", err);
+        alert("Error al agregar a favoritos");
+      }
+    });
   });
 </script>
-
-<style>
-  .container {
-    padding: 2rem;
-  }
-</style>
